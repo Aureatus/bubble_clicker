@@ -11,8 +11,7 @@ defmodule BubbleClicker.Application do
       BubbleClickerWeb.Telemetry,
       BubbleClicker.Repo,
       {Ecto.Migrator,
-        repos: Application.fetch_env!(:bubble_clicker, :ecto_repos),
-        skip: skip_migrations?()},
+       repos: Application.fetch_env!(:bubble_clicker, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:bubble_clicker, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: BubbleClicker.PubSub},
       # Start the Finch HTTP client for sending emails
