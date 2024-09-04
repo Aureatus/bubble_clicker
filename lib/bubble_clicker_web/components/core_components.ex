@@ -15,7 +15,7 @@ defmodule BubbleClickerWeb.CoreComponents do
   Icons are provided by [heroicons](https://heroicons.com). See `icon/1` for usage.
   """
   use Phoenix.Component
-  use Gettext, backend: BubbleClicker.Gettext
+  use Gettext, backend: BubbleClickerWeb.Gettext
 
   alias Phoenix.LiveView.JS
 

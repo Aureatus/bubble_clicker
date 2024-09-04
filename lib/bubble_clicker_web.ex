@@ -43,7 +43,7 @@ defmodule BubbleClickerWeb do
         layouts: [html: BubbleClickerWeb.Layouts]
 
       import Plug.Conn
-      import BubbleClickerWeb.Gettext
+      use Gettext, backend: BubbleClickerWeb.Gettext
 
       unquote(verified_routes())
     end
@@ -85,7 +85,7 @@ defmodule BubbleClickerWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import BubbleClickerWeb.CoreComponents
-      import BubbleClickerWeb.Gettext
+      use Gettext, backend: BubbleClickerWeb.Gettext
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
