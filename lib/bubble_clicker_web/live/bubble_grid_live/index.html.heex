@@ -14,7 +14,7 @@
   <div
     :for={{dom_id, cell} <- @streams.bubbles_grid}
     id={dom_id}
-    class={"p-2 #{if cell.value, do: "bg-black", else: "bg-blue-500"}"}
+    class={"p-2 select-none #{if cell.value, do: "bg-black", else: "bg-blue-500"}"}
     phx-click="pop"
     phx-value-row={cell.row_index}
     phx-value-column={cell.column_index}
