@@ -18,6 +18,8 @@ defmodule BubbleClickerWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/bubbles", BubbleGridLive.Index, :index
   end
 
   # Other scopes may use custom stacks.

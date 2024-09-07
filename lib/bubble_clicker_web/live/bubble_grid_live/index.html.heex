@@ -1,0 +1,23 @@
+<div
+  id="bubbles-stream"
+  phx-update="stream"
+  style={"
+    min-height: 70vh;
+    min-width: 70vw;
+    max-height: 70vh;
+    max-width: 70vw;
+    display: grid;
+    grid-template-columns: repeat(#{@grid_size}, auto);
+    grid-template-rows: repeat(#{@grid_size}, auto);
+    "}
+>
+  <div
+    :for={{dom_id, cell} <- @streams.bubbles_grid}
+    id={dom_id}
+    class={"p-2 #{if cell.value, do: "bg-black", else: "bg-blue-500"}"}
+    phx-click="pop"
+    phx-value-row={cell.row_index}
+    phx-value-column={cell.column_index}
+  >
+  </div>
+</div>
