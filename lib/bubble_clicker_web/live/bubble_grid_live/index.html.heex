@@ -2,13 +2,11 @@
   id="bubbles-stream"
   phx-update="stream"
   style={"
-    min-height: 70vh;
-    min-width: 70vw;
-    max-height: 70vh;
-    max-width: 70vw;
+    width: 800px;
+    height: 800px;
     display: grid;
-    grid-template-columns: repeat(#{@grid_size}, auto);
-    grid-template-rows: repeat(#{@grid_size}, auto);
+    grid-template-columns: repeat(#{@grid_size}, #{800/@grid_size}px);
+    grid-template-rows: repeat(#{@grid_size}, #{800/@grid_size}px);
     "}
 >
   <div
