@@ -23,9 +23,46 @@ import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+/**
+ * @type {Object.<string, import("phoenix_live_view").ViewHook>}
+ */
+let Hooks = {}
+Hooks.Canvas = {
+  mounted() {
+    let canvas = this.el;
+    let context = canvas.getContext("2d");
+    let canvasSize = canvas.clientWidth
+
+    this.pushEvent('Canvas:init', {}, (reply) => {
+        let cellSize = canvasSize / reply.grid_size
+
+        for (const cell of reply.data) {
+          const {value, column_index, row_index} = cell
+          const fill = value ? "black" : "blue"
+          context.fillStyle = fill
+
+          context.fillRect(column_index*cellSize, row_index*cellSize, cellSize, cellSize)
+        }
+      
+    })
+
+    this.handleEvent('Canvas:update', (reply) => {
+      const {value, column_index, row_index} = reply.data
+      let cellSize = canvasSize / reply.grid_size
+
+      const fill = value ? "black" : "blue"
+      context.fillStyle = fill
+
+      context.fillRect(column_index*cellSize, row_index*cellSize, cellSize, cellSize)
+    })
+  },
+}
+
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
-  params: {_csrf_token: csrfToken}
+  params: {_csrf_token: csrfToken},
+  hooks: Hooks
 })
 
 // Show progress bar on live navigation and form submits
