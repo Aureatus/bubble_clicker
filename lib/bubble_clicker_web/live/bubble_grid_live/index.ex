@@ -41,6 +41,33 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
      })}
   end
 
+  def handle_event(
+        "canvas_click",
+        %{"offsetX" => offsetX, "offsetY" => offsetY, "width" => width},
+        socket
+      ) do
+    cell_size = width / socket.assigns.grid_size
+
+    column_index_target = Kernel.trunc(offsetX / cell_size)
+    row_index_target = Kernel.trunc(offsetY / cell_size)
+
+    generated_bubble = %{
+      id: column_index_target + row_index_target * socket.assigns.grid_size,
+      value: true,
+      column_index: column_index_target,
+      row_index: row_index_target
+    }
+
+    socket =
+      stream_insert(socket, :bubbles_grid, generated_bubble, at: generated_bubble.id)
+
+    {:noreply,
+     push_event(socket, "Canvas:update", %{
+       data: generated_bubble,
+       grid_size: socket.assigns.grid_size
+     })}
+  end
+
   defp generate_bubbles(size) do
     List.duplicate(false, size) |> Enum.map(fn _x -> List.duplicate(false, size) end)
   end

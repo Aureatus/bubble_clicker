@@ -20,4 +20,13 @@
   >
   </div>
 </div>
-<canvas width="800" height="800" id="canvas" phx-hook="Canvas" phx-update="ignore"></canvas>
+<%!-- Send event with click location and canvas width to server. Server computes cell based on this info + grid_size. --%>
+<canvas
+  width="800"
+  height="800"
+  id="canvas"
+  phx-hook="Canvas"
+  phx-update="ignore"
+  phx-click={JS.push("canvas_click", value: %{width: 800})}
+>
+</canvas>
