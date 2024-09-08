@@ -2,7 +2,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   use Phoenix.LiveView
 
   def mount(_params, _session, socket) do
-    grid_size = 100
+    grid_size = 200
 
     bubbles = generate_bubbles(grid_size)
     bubbles_grid = generate_grid_from_bubbles_v2(bubbles)
@@ -15,32 +15,25 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     {:ok, socket}
   end
 
-  def handle_event("pop", %{"column" => column, "row" => row}, socket) do
+  def handle_event("pop", %{"id" => id, "column" => column, "row" => row}, socket) do
     row_number = String.to_integer(row)
     column_number = String.to_integer(column)
 
-    updated_bubbles = pop_bubble(socket.assigns.bubbles, row_number, column_number)
-    bubbles_grid = generate_grid_from_bubbles_v2(updated_bubbles)
-
-    edited_cell =
-      bubbles_grid
-      |> Enum.find(fn %{column_index: column_index, row_index: row_index} = _item ->
-        column_index === column_number && row_index === row_number
-      end)
+    generated_bubble = %{
+      id: id,
+      value: true,
+      column_index: column_number,
+      row_index: row_number
+    }
 
     socket =
-      assign(socket, :bubbles, updated_bubbles)
-      |> stream_insert(:bubbles_grid, edited_cell, at: edited_cell.id)
+      stream_insert(socket, :bubbles_grid, generated_bubble, at: generated_bubble.id)
 
     {:noreply, socket}
   end
 
   defp generate_bubbles(size) do
     List.duplicate(false, size) |> Enum.map(fn _x -> List.duplicate(false, size) end)
-  end
-
-  defp pop_bubble(bubbles, row, column) do
-    bubbles |> List.update_at(row, &List.update_at(&1, column, fn _ -> true end))
   end
 
   defp generate_grid_from_bubbles_v2(bubbles) do
