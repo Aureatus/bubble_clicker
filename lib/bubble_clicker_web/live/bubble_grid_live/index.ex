@@ -5,12 +5,10 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     grid_size = 20
 
     bubbles = generate_bubbles(grid_size)
-    bubbles_grid = generate_grid_from_bubbles_v2(bubbles)
 
     socket =
       assign(socket, :bubbles, bubbles)
       |> assign(:grid_size, grid_size)
-      |> stream(:bubbles_grid, bubbles_grid)
 
     {:ok, socket}
   end
@@ -18,27 +16,6 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   def handle_event("Canvas:init", _params, socket) do
     data = generate_grid_from_bubbles_v2(socket.assigns.bubbles)
     {:reply, %{data: data, grid_size: socket.assigns.grid_size}, socket}
-  end
-
-  def handle_event("pop", %{"id" => id, "column" => column, "row" => row}, socket) do
-    row_number = String.to_integer(row)
-    column_number = String.to_integer(column)
-
-    generated_bubble = %{
-      id: id,
-      value: true,
-      column_index: column_number,
-      row_index: row_number
-    }
-
-    socket =
-      stream_insert(socket, :bubbles_grid, generated_bubble, at: generated_bubble.id)
-
-    {:noreply,
-     push_event(socket, "Canvas:update", %{
-       data: generated_bubble,
-       grid_size: socket.assigns.grid_size
-     })}
   end
 
   def handle_event(
@@ -57,9 +34,6 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       column_index: column_index_target,
       row_index: row_index_target
     }
-
-    socket =
-      stream_insert(socket, :bubbles_grid, generated_bubble, at: generated_bubble.id)
 
     {:noreply,
      push_event(socket, "Canvas:update", %{

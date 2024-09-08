@@ -1,26 +1,3 @@
-<div
-  id="bubbles-stream"
-  phx-update="stream"
-  style={"
-    width: 800px;
-    height: 800px;
-    display: grid;
-    grid-template-columns: repeat(#{@grid_size}, #{800/@grid_size}px);
-    grid-template-rows: repeat(#{@grid_size}, #{800/@grid_size}px);
-    "}
->
-  <div
-    :for={{dom_id, cell} <- @streams.bubbles_grid}
-    id={dom_id}
-    class={"p-2 select-none #{if cell.value, do: "!bg-black", else: "bg-blue-500"}"}
-    phx-click={JS.push("pop") |> JS.add_class("!bg-black")}
-    phx-value-row={cell.row_index}
-    phx-value-column={cell.column_index}
-    phx-value-id={cell.id}
-  >
-  </div>
-</div>
-<%!-- Send event with click location and canvas width to server. Server computes cell based on this info + grid_size. --%>
 <canvas
   width="800"
   height="800"
