@@ -1,5 +1,5 @@
 defmodule BubbleClickerWeb.BubbleGridLive.Index do
-  use Phoenix.LiveView
+  use BubbleClickerWeb, :live_view
 
   def mount(_params, _session, socket) do
     grid_size = 200
