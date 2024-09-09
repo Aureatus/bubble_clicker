@@ -4,35 +4,34 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   def mount(_params, _session, socket) do
     grid_size = 20
     grid_dimension = 800
+    cell_size = grid_dimension / grid_size
     bubbles = generate_bubbles(grid_size)
 
     socket =
       assign(socket, :bubbles, bubbles)
       |> assign(:grid_size, grid_size)
       |> assign(:grid_dimension, grid_dimension)
+      |> assign(:cell_size, cell_size)
 
     {:ok, socket}
   end
 
   def handle_event("Canvas:init", _params, socket) do
-    cell_size = socket.assigns.grid_dimension / socket.assigns.grid_size
-
-    data = generate_grid_from_bubbles(socket.assigns.bubbles, cell_size)
+    data = generate_grid_from_bubbles(socket.assigns.bubbles, socket.assigns.cell_size)
 
     {:reply,
      %{
        data: data,
-       cell_size: cell_size
+       cell_size: socket.assigns.cell_size
      }, socket}
   end
 
   def handle_event(
         "canvas_click",
-        %{"offsetX" => offsetX, "offsetY" => offsetY, "width" => width},
+        %{"offsetX" => offsetX, "offsetY" => offsetY},
         socket
       ) do
-    cell_size = width / socket.assigns.grid_size
-
+    cell_size = socket.assigns.cell_size
     column_index_target = Kernel.trunc(offsetX / cell_size) * cell_size
     row_index_target = Kernel.trunc(offsetY / cell_size) * cell_size
 
@@ -45,7 +44,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     {:noreply,
      push_event(socket, "Canvas:update", %{
        data: generated_bubble,
-       cell_size: socket.assigns.grid_dimension / socket.assigns.grid_size
+       cell_size: cell_size
      })}
   end
 
