@@ -5,25 +5,20 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     grid_size = 20
     grid_dimension = 800
     cell_size = grid_dimension / grid_size
-    bubbles = generate_bubbles(grid_size)
+    bubbles_grid = generate_bubbles_grid(grid_size, cell_size)
 
     socket =
-      assign(socket, :bubbles, bubbles)
+      assign(socket, :bubbles, bubbles_grid)
       |> assign(:grid_size, grid_size)
       |> assign(:grid_dimension, grid_dimension)
       |> assign(:cell_size, cell_size)
 
-    {:ok, socket}
-  end
-
-  def handle_event("Canvas:init", _params, socket) do
-    data = generate_grid_from_bubbles(socket.assigns.bubbles, socket.assigns.cell_size)
-
-    {:reply,
-     %{
-       data: data,
-       cell_size: socket.assigns.cell_size
-     }, socket}
+    {:ok,
+     socket
+     |> push_event("Canvas:init", %{
+       data: bubbles_grid,
+       cell_size: cell_size
+     })}
   end
 
   def handle_event(
@@ -48,22 +43,19 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
      })}
   end
 
-  defp generate_bubbles(size) do
-    List.duplicate(false, size) |> Enum.map(fn _x -> List.duplicate(false, size) end)
-  end
-
-  defp generate_grid_from_bubbles(bubbles, cell_size) do
-    bubbles
+  defp generate_bubbles_grid(grid_size, cell_size) do
+    1..(grid_size * grid_size)
+    |> Enum.chunk_every(grid_size)
     |> Enum.with_index()
-    |> Enum.map(fn {cells, column_index} ->
-      Enum.map(cells, fn cell -> {cell, column_index} end)
-    end)
-    |> Enum.map(fn cell ->
-      Enum.with_index(cell) |> Enum.map(fn {cell, row_index} -> Tuple.append(cell, row_index) end)
+    |> Enum.map(fn {column, column_index} ->
+      Enum.map(column, fn val ->
+        row_index = val - 1 - column_index * grid_size
+
+        x = column_index * cell_size
+        y = row_index * cell_size
+        %{id: val, value: false, x: x, y: y}
+      end)
     end)
     |> List.flatten()
-    |> Enum.map(fn {val, column_index, row_index} ->
-      %{value: val, x: column_index * cell_size, y: row_index * cell_size}
-    end)
   end
 end

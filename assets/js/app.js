@@ -35,7 +35,7 @@ Hooks.Canvas = {
     let canvas = this.el;
     let context = canvas.getContext("2d");
 
-    this.pushEvent("Canvas:init", {}, (reply) => {
+    this.handleEvent("Canvas:init", (reply) => {
       const { data, cell_size } = reply;
       for (const cell of data) {
         const { value, x, y } = cell;
