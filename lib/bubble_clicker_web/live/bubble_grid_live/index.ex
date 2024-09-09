@@ -3,19 +3,26 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
 
   def mount(_params, _session, socket) do
     grid_size = 20
-
+    grid_dimension = 800
     bubbles = generate_bubbles(grid_size)
 
     socket =
       assign(socket, :bubbles, bubbles)
       |> assign(:grid_size, grid_size)
+      |> assign(:grid_dimension, grid_dimension)
 
     {:ok, socket}
   end
 
   def handle_event("Canvas:init", _params, socket) do
     data = generate_grid_from_bubbles_v2(socket.assigns.bubbles)
-    {:reply, %{data: data, grid_size: socket.assigns.grid_size}, socket}
+
+    {:reply,
+     %{
+       data: data,
+       grid_size: socket.assigns.grid_size,
+       grid_dimension: socket.assigns.grid_dimension
+     }, socket}
   end
 
   def handle_event(

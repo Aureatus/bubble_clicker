@@ -1,9 +1,9 @@
 <canvas
-  width="800"
-  height="800"
+  width={@grid_dimension}
+  height={@grid_dimension}
   id="canvas"
   phx-hook="Canvas"
   phx-update="ignore"
-  phx-click={JS.push("canvas_click", value: %{width: 800})}
+  phx-click={JS.push("canvas_click", value: %{width: @grid_dimension})}
 >
 </canvas>
