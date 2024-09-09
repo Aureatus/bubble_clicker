@@ -15,12 +15,14 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   end
 
   def handle_event("Canvas:init", _params, socket) do
-    data = generate_grid_from_bubbles_v2(socket.assigns.bubbles)
+    cell_size = socket.assigns.grid_dimension / socket.assigns.grid_size
+
+    data = generate_grid_from_bubbles(socket.assigns.bubbles, cell_size)
 
     {:reply,
      %{
        data: data,
-       cell_size: socket.assigns.grid_dimension / socket.assigns.grid_size
+       cell_size: cell_size
      }, socket}
   end
 
@@ -31,14 +33,13 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       ) do
     cell_size = width / socket.assigns.grid_size
 
-    column_index_target = Kernel.trunc(offsetX / cell_size)
-    row_index_target = Kernel.trunc(offsetY / cell_size)
+    column_index_target = Kernel.trunc(offsetX / cell_size) * cell_size
+    row_index_target = Kernel.trunc(offsetY / cell_size) * cell_size
 
     generated_bubble = %{
-      id: column_index_target + row_index_target * socket.assigns.grid_size,
       value: true,
-      column_index: column_index_target,
-      row_index: row_index_target
+      x: column_index_target,
+      y: row_index_target
     }
 
     {:noreply,
@@ -52,23 +53,18 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     List.duplicate(false, size) |> Enum.map(fn _x -> List.duplicate(false, size) end)
   end
 
-  defp generate_grid_from_bubbles_v2(bubbles) do
+  defp generate_grid_from_bubbles(bubbles, cell_size) do
     bubbles
     |> Enum.with_index()
-    |> Enum.map(fn {value, index} ->
-      Enum.map(Enum.with_index(value), fn {val2, index2} ->
-        {val2, {index2, index}}
-      end)
+    |> Enum.map(fn {cells, column_index} ->
+      Enum.map(cells, fn cell -> {cell, column_index} end)
+    end)
+    |> Enum.map(fn cell ->
+      Enum.with_index(cell) |> Enum.map(fn {cell, row_index} -> Tuple.append(cell, row_index) end)
     end)
     |> List.flatten()
-    |> Enum.map(fn {val, {col_index, row_index}} ->
-      %{
-        value: val,
-        column_index: col_index,
-        row_index: row_index
-      }
+    |> Enum.map(fn {val, column_index, row_index} ->
+      %{value: val, x: column_index * cell_size, y: row_index * cell_size}
     end)
-    |> Enum.with_index()
-    |> Enum.map(fn {val, index} -> Map.put(val, :id, index) end)
   end
 end

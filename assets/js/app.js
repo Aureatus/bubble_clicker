@@ -36,22 +36,22 @@ Hooks.Canvas = {
     this.pushEvent('Canvas:init', {}, (reply) => {
         const {data, cell_size} = reply
         for (const cell of data) {
-          const {value, column_index, row_index} = cell
+          const {value, x, y} = cell
           const fill = value ? "black" : "blue"
           context.fillStyle = fill
 
-          context.fillRect(column_index*cell_size, row_index*cell_size, cell_size, cell_size)
+          context.fillRect(x, y, cell_size, cell_size)
         }
     })
 
     this.handleEvent('Canvas:update', (reply) => {
       const {data, cell_size} = reply
-      const {value, column_index, row_index} = data
+      const {value, x, y} = data
 
       const fill = value ? "black" : "blue"
       context.fillStyle = fill
 
-      context.fillRect(column_index*cell_size, row_index*cell_size, cell_size, cell_size)
+      context.fillRect(x, y, cell_size, cell_size)
     })
   },
 }
