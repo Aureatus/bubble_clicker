@@ -32,29 +32,26 @@ Hooks.Canvas = {
   mounted() {
     let canvas = this.el;
     let context = canvas.getContext("2d");
-    let canvasSize
-    
+
     this.pushEvent('Canvas:init', {}, (reply) => {
-        canvasSize = reply.grid_dimension
-        let cellSize = canvasSize / reply.grid_size
-        for (const cell of reply.data) {
+        const {data, cell_size} = reply
+        for (const cell of data) {
           const {value, column_index, row_index} = cell
           const fill = value ? "black" : "blue"
           context.fillStyle = fill
 
-          context.fillRect(column_index*cellSize, row_index*cellSize, cellSize, cellSize)
+          context.fillRect(column_index*cell_size, row_index*cell_size, cell_size, cell_size)
         }
-      
     })
 
     this.handleEvent('Canvas:update', (reply) => {
-      const {value, column_index, row_index} = reply.data
-      let cellSize = canvasSize / reply.grid_size
+      const {data, cell_size} = reply
+      const {value, column_index, row_index} = data
 
       const fill = value ? "black" : "blue"
       context.fillStyle = fill
 
-      context.fillRect(column_index*cellSize, row_index*cellSize, cellSize, cellSize)
+      context.fillRect(column_index*cell_size, row_index*cell_size, cell_size, cell_size)
     })
   },
 }

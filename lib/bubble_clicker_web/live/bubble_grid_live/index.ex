@@ -20,8 +20,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     {:reply,
      %{
        data: data,
-       grid_size: socket.assigns.grid_size,
-       grid_dimension: socket.assigns.grid_dimension
+       cell_size: socket.assigns.grid_dimension / socket.assigns.grid_size
      }, socket}
   end
 
@@ -45,7 +44,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     {:noreply,
      push_event(socket, "Canvas:update", %{
        data: generated_bubble,
-       grid_size: socket.assigns.grid_size
+       cell_size: socket.assigns.grid_dimension / socket.assigns.grid_size
      })}
   end
 
