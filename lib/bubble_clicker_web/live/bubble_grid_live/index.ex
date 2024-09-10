@@ -2,7 +2,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   use BubbleClickerWeb, :live_view
 
   def mount(_params, _session, socket) do
-    grid_size = 1000
+    grid_size = 20
     grid_dimension = 800
     cell_size = grid_dimension / grid_size
     bubbles_grid = generate_bubbles_grid(grid_size, cell_size)
@@ -52,6 +52,24 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
      |> push_event("Canvas:update", %{
        data: generated_bubble,
        cell_size: cell_size
+     })}
+  end
+
+  def handle_event("change_grid_size", %{"amount" => amount}, socket) do
+    amount_integer = String.to_integer(amount)
+
+    new_grid_size = socket.assigns.grid_size + amount_integer
+    new_cell_size = socket.assigns.grid_dimension / new_grid_size
+    new_bubbles = generate_bubbles_grid(new_grid_size, new_cell_size)
+
+    {:noreply,
+     socket
+     |> assign(:grid_size, new_grid_size)
+     |> assign(:cell_size, new_cell_size)
+     |> assign(:bubbles, new_bubbles)
+     |> push_event("Canvas:init", %{
+       data: new_bubbles,
+       cell_size: new_cell_size
      })}
   end
 

@@ -36,6 +36,9 @@ Hooks.Canvas = {
     let context = canvas.getContext("2d");
 
     this.handleEvent("Canvas:init", (reply) => {
+      context.fillStyle = "blue";
+      context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+
       const { data, cell_size } = reply;
       for (const cell of data) {
         const { value, x, y } = cell;

@@ -1,3 +1,13 @@
+<.header>
+  Bubble Grid
+  Current grid size: <%= @grid_size %>
+  <:actions>
+    <input type="button" value="+5" phx-click="change_grid_size" phx-value-amount={+5} />
+    <input type="button" value="+10" phx-click="change_grid_size" phx-value-amount={+10} />
+    <input type="button" value="-5" phx-click="change_grid_size" phx-value-amount={-5} />
+    <input type="button" value="-10" phx-click="change_grid_size" phx-value-amount={-10} />
+  </:actions>
+</.header>
 <canvas
   width={@grid_dimension}
   height={@grid_dimension}
