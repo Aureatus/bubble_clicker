@@ -2,7 +2,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   use BubbleClickerWeb, :live_view
 
   def mount(_params, _session, socket) do
-    grid_size = 20
+    grid_size = 1000
     grid_dimension = 800
     cell_size = grid_dimension / grid_size
     bubbles_grid = generate_bubbles_grid(grid_size, cell_size)
@@ -36,8 +36,20 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       y: row_index_target
     }
 
+    new_bubbles =
+      socket.assigns.bubbles
+      |> Enum.map(fn %{id: id, x: x, y: y} = bubble ->
+        if x == column_index_target and y == row_index_target do
+          %{x: x, y: y, id: id, value: true}
+        else
+          bubble
+        end
+      end)
+
     {:noreply,
-     push_event(socket, "Canvas:update", %{
+     socket
+     |> assign(:bubbles, new_bubbles)
+     |> push_event("Canvas:update", %{
        data: generated_bubble,
        cell_size: cell_size
      })}
