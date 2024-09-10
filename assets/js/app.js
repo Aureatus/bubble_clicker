@@ -36,13 +36,13 @@ Hooks.Canvas = {
     let context = canvas.getContext("2d");
 
     this.handleEvent("Canvas:init", (reply) => {
-      context.fillStyle = "blue";
+      context.fillStyle = "#FAF9F6";
       context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
       const { data, cell_size } = reply;
       for (const cell of data) {
         const { value, x, y } = cell;
-        const fill = value ? "black" : "blue";
+        const fill = value ? "black" : "#FAF9F6";
         context.fillStyle = fill;
 
         context.fillRect(x, y, cell_size, cell_size);
@@ -53,7 +53,7 @@ Hooks.Canvas = {
       const { data, cell_size } = reply;
       const { value, x, y } = data;
 
-      const fill = value ? "black" : "blue";
+      const fill = value ? "black" : "#FAF9F6";
       context.fillStyle = fill;
 
       context.fillRect(x, y, cell_size, cell_size);
