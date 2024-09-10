@@ -59,7 +59,7 @@ Hooks.Canvas = {
 };
 
 let liveSocket = new LiveSocket("/live", Socket, {
-  longPollFallbackMs: 2500,
+  longPollFallbackMs: 5000,
   params: { _csrf_token: csrfToken },
   metadata: {
     click: (e) => {
