@@ -1,24 +1,20 @@
-<div
-  id="bubbles-stream"
-  phx-update="stream"
-  style={"
-    min-height: 70vh;
-    min-width: 70vw;
-    max-height: 70vh;
-    max-width: 70vw;
-    display: grid;
-    grid-template-columns: repeat(#{@grid_size}, auto);
-    grid-template-rows: repeat(#{@grid_size}, auto);
-    "}
+<.header>
+  Bubble Grid
+  Current grid size: <%= @grid_size %>
+  <:actions>
+    <input type="button" value="+5" phx-click="change_grid_size" phx-value-amount={+5} />
+    <input type="button" value="+10" phx-click="change_grid_size" phx-value-amount={+10} />
+    <input type="button" value="-5" phx-click="change_grid_size" phx-value-amount={-5} />
+    <input type="button" value="-10" phx-click="change_grid_size" phx-value-amount={-10} />
+  </:actions>
+</.header>
+<canvas
+  width={@grid_dimension}
+  height={@grid_dimension}
+  class="border-8 border-blue-400"
+  id="canvas"
+  phx-hook="Canvas"
+  phx-update="ignore"
+  phx-click={JS.push("canvas_click", value: %{width: @grid_dimension})}
 >
-  <div
-    :for={{dom_id, cell} <- @streams.bubbles_grid}
-    id={dom_id}
-    class={"p-2 select-none #{if cell.value, do: "!bg-black", else: "bg-blue-500"}"}
-    phx-click={JS.push("pop") |> JS.add_class("!bg-black")}
-    phx-value-row={cell.row_index}
-    phx-value-column={cell.column_index}
-    phx-value-id={cell.id}
-  >
-  </div>
-</div>
+</canvas>
