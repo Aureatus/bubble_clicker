@@ -1,4 +1,5 @@
 defmodule BubbleClickerWeb.BubbleGridLive.Index do
+  alias BubbleClicker.Accounts
   alias BubbleClicker.Bubbles
   use BubbleClickerWeb, :live_view
 
@@ -10,13 +11,15 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     bubbles_grid =
       Bubbles.generate_bubbles_grid(grid_size, cell_size)
 
+    auth_id = Accounts.generate_uuid()
+
     socket =
       socket
       |> assign(:grid_size, grid_size)
       |> assign(:grid_dimension, grid_dimension)
       |> assign(:cell_size, cell_size)
       |> assign(:bubbles, bubbles_grid)
-      |> assign(:auth_id, "1232-567567-234123")
+      |> assign(:auth_id, auth_id)
       |> push_event("Canvas:init", %{
         data: bubbles_grid,
         cell_size: cell_size
@@ -26,9 +29,15 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   end
 
   def handle_event("Auth:receive", %{"auth_id" => auth_id}, socket) do
-    {:noreply,
-     socket
-     |> assign(:auth_id, auth_id)}
+    user =
+      if auth_id === socket.assigns.auth_id do
+        {:ok, user} = Accounts.create_user(%{key: socket.assigns.auth_id, score: 0})
+        user
+      else
+        Accounts.get_user!(auth_id)
+      end
+
+    {:noreply, socket |> assign(:auth_id, auth_id) |> assign(:user, user)}
   end
 
   def handle_event(
