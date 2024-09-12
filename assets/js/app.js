@@ -32,6 +32,10 @@ let csrfToken = document
 let Hooks = {};
 Hooks.Canvas = {
   mounted() {
+    let auth_id = localStorage.getItem("auth_id") || this.el.dataset.auth_id;
+    localStorage.setItem(auth_id, auth_id);
+    this.pushEvent("Auth:receive", { auth_id });
+
     let canvas = this.el;
     let context = canvas.getContext("2d");
 
