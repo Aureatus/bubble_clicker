@@ -1,4 +1,5 @@
 defmodule BubbleClickerWeb.BubbleGridLive.Index do
+  alias BubbleClicker.Accounts
   alias BubbleClicker.Bubbles
   use BubbleClickerWeb, :live_view
 
@@ -6,20 +7,39 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     grid_size = 20
     grid_dimension = 800
     cell_size = Bubbles.calculate_cell_size(grid_dimension, grid_size)
-    bubbles_grid = Bubbles.generate_bubbles_grid(grid_size, cell_size)
+
+    bubbles_grid =
+      Bubbles.generate_bubbles_grid(grid_size, cell_size)
+
+    auth_id = Accounts.generate_uuid()
 
     socket =
-      assign(socket, :bubbles, bubbles_grid)
+      socket
       |> assign(:grid_size, grid_size)
       |> assign(:grid_dimension, grid_dimension)
       |> assign(:cell_size, cell_size)
+      |> assign(:bubbles, bubbles_grid)
+      |> assign(:auth_id, auth_id)
+      |> assign(:user_key, nil)
+      |> assign(:user_score, nil)
+      |> push_event("Canvas:init", %{
+        data: bubbles_grid,
+        cell_size: cell_size
+      })
 
-    {:ok,
-     socket
-     |> push_event("Canvas:init", %{
-       data: bubbles_grid,
-       cell_size: cell_size
-     })}
+    {:ok, socket}
+  end
+
+  def handle_event("Auth:receive", %{"auth_id" => auth_id}, socket) do
+    user =
+      if auth_id === socket.assigns.auth_id do
+        {:ok, user} = Accounts.create_user(%{key: socket.assigns.auth_id, score: 0})
+        user
+      else
+        Accounts.get_user!(auth_id)
+      end
+
+    {:noreply, socket |> assign(auth_id: auth_id, user_key: user.key, user_score: user.score)}
   end
 
   def handle_event(
@@ -38,13 +58,19 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         row_index_target
       )
 
-    {:noreply,
-     socket
-     |> assign(:bubbles, updated_bubbles)
-     |> push_event("Canvas:update", %{
-       data: updated_bubble,
-       cell_size: cell_size
-     })}
+    if Bubbles.cell_already_popped?(socket.assigns.bubbles, column_index_target, row_index_target) do
+      {:noreply, socket}
+    else
+      score = Accounts.increase_user_score(socket.assigns.user_key)
+
+      {:noreply,
+       socket
+       |> assign(bubbles: updated_bubbles, user_score: score)
+       |> push_event("Canvas:update", %{
+         data: updated_bubble,
+         cell_size: cell_size
+       })}
+    end
   end
 
   def handle_event("change_grid_size", %{"amount" => amount}, socket) do

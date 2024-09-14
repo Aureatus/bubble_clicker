@@ -42,4 +42,13 @@ defmodule BubbleClicker.Bubbles do
 
     {updated_bubbles, updated_bubble}
   end
+
+  def cell_already_popped?(bubbles, column_index, row_index) do
+    bubble =
+      Enum.find(bubbles, fn bubble ->
+        bubble.x == column_index and bubble.y == row_index
+      end)
+
+    bubble.value
+  end
 end
