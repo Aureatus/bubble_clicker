@@ -51,11 +51,6 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     column_index_target = Bubbles.get_index_from_coordinate(offsetX, cell_size)
     row_index_target = Bubbles.get_index_from_coordinate(offsetY, cell_size)
 
-    already_popped? =
-      Enum.find(socket.assigns.bubbles, fn bubble ->
-        bubble.x == column_index_target and bubble.y == row_index_target
-      end).value
-
     {updated_bubbles, updated_bubble} =
       Bubbles.update_bubbles_grid(
         socket.assigns.bubbles,
@@ -63,7 +58,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         row_index_target
       )
 
-    if already_popped? do
+    if Bubbles.cell_already_popped?(socket.assigns.bubbles, column_index_target, row_index_target) do
       {:noreply, socket}
     else
       score = Accounts.increase_user_score(socket.assigns.user_key)
