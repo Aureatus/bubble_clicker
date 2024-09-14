@@ -1,10 +1,18 @@
 <.header>
   Bubble Grid <br /> Current grid size: <%= @grid_size %> <br /> Score: <%= @user_score %>
   <:actions>
-    <input type="button" value="+5" phx-click="change_grid_size" phx-value-amount={+5} />
-    <input type="button" value="+10" phx-click="change_grid_size" phx-value-amount={+10} />
-    <input type="button" value="-5" phx-click="change_grid_size" phx-value-amount={-5} />
-    <input type="button" value="-10" phx-click="change_grid_size" phx-value-amount={-10} />
+    <section>
+      <input type="button" value="+5" phx-click="change_grid_size" phx-value-amount={+5} />
+      <input type="button" value="+10" phx-click="change_grid_size" phx-value-amount={+10} />
+      <input type="button" value="-5" phx-click="change_grid_size" phx-value-amount={-5} />
+      <input type="button" value="-10" phx-click="change_grid_size" phx-value-amount={-10} />
+    </section>
+    <section>
+      <label>
+        <input type="button" phx-click="upgrade_perk" phx-value-perk_name="click_size" />
+        Upgrade click size to <%= @user_click_size + 1 %>
+      </label>
+    </section>
   </:actions>
 </.header>
 <canvas

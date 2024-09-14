@@ -113,4 +113,12 @@ defmodule BubbleClicker.Accounts do
     {_, [user]} = Repo.update_all(query, [])
     user.score
   end
+
+  def increment_user_perk(user_key, perk_name) do
+    query =
+      from(u in User, update: [inc: [{^perk_name, 1}]], where: u.key == ^user_key, select: u)
+
+    {_, [user]} = Repo.update_all(query, [])
+    user.score
+  end
 end

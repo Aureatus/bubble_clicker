@@ -3,6 +3,8 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   alias BubbleClicker.Bubbles
   use BubbleClickerWeb, :live_view
 
+  @perk_strings ["click_size"]
+
   def mount(_params, _session, socket) do
     grid_size = 20
     grid_dimension = 800
@@ -22,6 +24,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       |> assign(:auth_id, auth_id)
       |> assign(:user_key, nil)
       |> assign(:user_score, nil)
+      |> assign(:user_click_size, 1)
       |> push_event("Canvas:init", %{
         data: bubbles_grid,
         cell_size: cell_size
@@ -39,7 +42,14 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         Accounts.get_user!(auth_id)
       end
 
-    {:noreply, socket |> assign(auth_id: auth_id, user_key: user.key, user_score: user.score)}
+    {:noreply,
+     socket
+     |> assign(
+       auth_id: auth_id,
+       user_key: user.key,
+       user_score: user.score,
+       user_click_size: user.click_size
+     )}
   end
 
   def handle_event(
@@ -89,5 +99,15 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
        data: new_bubbles,
        cell_size: new_cell_size
      })}
+  end
+
+  def handle_event("upgrade_perk", %{"perk_name" => perk_name}, socket) do
+    if perk_name in @perk_strings do
+      perk_atom = String.to_atom(perk_name)
+      perk_level = Accounts.increment_user_perk(socket.assigns.user_key, perk_atom)
+      {:noreply, socket |> assign(perk_atom, perk_level)}
+    else
+      {:noreply, socket}
+    end
   end
 end
