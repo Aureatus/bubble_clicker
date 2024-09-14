@@ -107,7 +107,10 @@ defmodule BubbleClicker.Accounts do
   end
 
   def increase_user_score(user_key) do
-    from(u in User, update: [inc: [score: 1]], where: u.key == ^user_key, select: u)
-    |> Repo.update_all([])
+    query =
+      from(u in User, update: [inc: [score: 1]], where: u.key == ^user_key, select: u)
+
+    {_, [user]} = Repo.update_all(query, [])
+    user.score
   end
 end

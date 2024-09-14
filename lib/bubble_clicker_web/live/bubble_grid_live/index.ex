@@ -66,11 +66,11 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     if already_popped? do
       {:noreply, socket}
     else
-      {_, [user]} = Accounts.increase_user_score(socket.assigns.user_key)
+      score = Accounts.increase_user_score(socket.assigns.user_key)
 
       {:noreply,
        socket
-       |> assign(bubbles: updated_bubbles, user_score: user.score)
+       |> assign(bubbles: updated_bubbles, user_score: score)
        |> push_event("Canvas:update", %{
          data: updated_bubble,
          cell_size: cell_size
