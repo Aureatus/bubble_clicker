@@ -1,4 +1,7 @@
 defmodule BubbleClicker.Accounts.User do
+  @moduledoc """
+  Schema for users in bubble clicker
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
