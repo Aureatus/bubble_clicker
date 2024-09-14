@@ -20,6 +20,8 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       |> assign(:cell_size, cell_size)
       |> assign(:bubbles, bubbles_grid)
       |> assign(:auth_id, auth_id)
+      |> assign(:user_key, nil)
+      |> assign(:user_score, nil)
       |> push_event("Canvas:init", %{
         data: bubbles_grid,
         cell_size: cell_size
@@ -37,7 +39,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         Accounts.get_user!(auth_id)
       end
 
-    {:noreply, socket |> assign(:auth_id, auth_id) |> assign(:user, user)}
+    {:noreply, socket |> assign(auth_id: auth_id, user_key: user.key, user_score: user.score)}
   end
 
   def handle_event(
@@ -49,6 +51,11 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     column_index_target = Bubbles.get_index_from_coordinate(offsetX, cell_size)
     row_index_target = Bubbles.get_index_from_coordinate(offsetY, cell_size)
 
+    already_popped? =
+      Enum.find(socket.assigns.bubbles, fn bubble ->
+        bubble.x == column_index_target and bubble.y == row_index_target
+      end).value
+
     {updated_bubbles, updated_bubble} =
       Bubbles.update_bubbles_grid(
         socket.assigns.bubbles,
@@ -56,13 +63,19 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         row_index_target
       )
 
-    {:noreply,
-     socket
-     |> assign(:bubbles, updated_bubbles)
-     |> push_event("Canvas:update", %{
-       data: updated_bubble,
-       cell_size: cell_size
-     })}
+    if already_popped? do
+      {:noreply, socket}
+    else
+      {_, [user]} = Accounts.increase_user_score(socket.assigns.user_key)
+
+      {:noreply,
+       socket
+       |> assign(bubbles: updated_bubbles, user_score: user.score)
+       |> push_event("Canvas:update", %{
+         data: updated_bubble,
+         cell_size: cell_size
+       })}
+    end
   end
 
   def handle_event("change_grid_size", %{"amount" => amount}, socket) do

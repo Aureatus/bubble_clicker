@@ -105,4 +105,9 @@ defmodule BubbleClicker.Accounts do
   def generate_uuid do
     Ecto.UUID.generate()
   end
+
+  def increase_user_score(user_key) do
+    from(u in User, update: [inc: [score: 1]], where: u.key == ^user_key, select: u)
+    |> Repo.update_all([])
+  end
 end
