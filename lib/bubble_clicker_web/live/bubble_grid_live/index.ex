@@ -6,7 +6,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   @perk_strings ["click_size"]
 
   def mount(_params, _session, socket) do
-    grid_size = 20
+    grid_size = 30
     grid_dimension = 800
     cell_size = Bubbles.calculate_cell_size(grid_dimension, grid_size)
 

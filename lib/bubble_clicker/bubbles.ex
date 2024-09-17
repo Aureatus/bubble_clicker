@@ -3,8 +3,16 @@ defmodule BubbleClicker.Bubbles do
   Functions to help handle bubble grids, the base upon which this game runs.
   """
 
+  def number_to_decimal(number) do
+    if is_float(number) do
+      Decimal.from_float(number)
+    else
+      Decimal.new(number)
+    end
+  end
+
   def calculate_cell_size(grid_dimension, grid_size) do
-    grid_dimension / grid_size
+    Decimal.div(number_to_decimal(grid_dimension), number_to_decimal(grid_size))
   end
 
   def generate_bubbles_grid(grid_size, cell_size) do
@@ -13,10 +21,17 @@ defmodule BubbleClicker.Bubbles do
     |> Enum.with_index()
     |> Enum.map(fn {column, column_index} ->
       Enum.map(column, fn val ->
-        row_index = val - 1 - column_index * grid_size
+        column_index_decimal = number_to_decimal(column_index)
 
-        x = column_index * cell_size
-        y = row_index * cell_size
+        row_index =
+          Decimal.sub(
+            number_to_decimal(val - 1),
+            Decimal.mult(column_index_decimal, number_to_decimal(grid_size))
+          )
+
+        x = Decimal.mult(column_index_decimal, cell_size)
+        y = Decimal.mult(row_index, cell_size)
+
         %{id: val, value: false, x: x, y: y}
       end)
     end)
@@ -24,13 +39,17 @@ defmodule BubbleClicker.Bubbles do
   end
 
   def get_index_from_coordinate(x_coordinate, cell_size) do
-    Kernel.trunc(x_coordinate / cell_size) * cell_size
+    decimal_coordinate = number_to_decimal(x_coordinate)
+    whole_divisions = Decimal.div(decimal_coordinate, cell_size) |> Decimal.round(0, :floor)
+    calculated_coordinate = Decimal.mult(whole_divisions, cell_size)
+
+    calculated_coordinate
   end
 
   def update_bubbles_grid(bubbles, column_index, row_index) do
     updated_bubbles =
       Enum.map(bubbles, fn %{id: id, x: x, y: y, value: value} = bubble ->
-        if x == column_index and y == row_index and value !== true do
+        if x === column_index and y === row_index and value !== true do
           %{x: x, y: y, id: id, value: true}
         else
           bubble
@@ -38,7 +57,7 @@ defmodule BubbleClicker.Bubbles do
       end)
 
     updated_bubble =
-      Enum.find(updated_bubbles, fn %{x: x, y: y} -> x == column_index and y == row_index end)
+      Enum.find(updated_bubbles, fn %{x: x, y: y} -> x === column_index and y === row_index end)
 
     {updated_bubbles, updated_bubble}
   end
@@ -46,7 +65,7 @@ defmodule BubbleClicker.Bubbles do
   def cell_already_popped?(bubbles, column_index, row_index) do
     bubble =
       Enum.find(bubbles, fn bubble ->
-        bubble.x == column_index and bubble.y == row_index
+        bubble.x === column_index and bubble.y === row_index
       end)
 
     bubble.value
