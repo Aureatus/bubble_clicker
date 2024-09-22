@@ -3,8 +3,12 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   alias BubbleClicker.Bubbles
   use BubbleClickerWeb, :live_view
 
+  @perk_strings ["click_size"]
+
   def mount(_params, _session, socket) do
-    grid_size = 20
+    Bubbles.init_decimal_context()
+
+    grid_size = 30
     grid_dimension = 800
     cell_size = Bubbles.calculate_cell_size(grid_dimension, grid_size)
 
@@ -21,7 +25,8 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       |> assign(:bubbles, bubbles_grid)
       |> assign(:auth_id, auth_id)
       |> assign(:user_key, nil)
-      |> assign(:user_score, nil)
+      |> assign(:score, nil)
+      |> assign(:click_size, 1)
       |> push_event("Canvas:init", %{
         data: bubbles_grid,
         cell_size: cell_size
@@ -39,7 +44,14 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         Accounts.get_user!(auth_id)
       end
 
-    {:noreply, socket |> assign(auth_id: auth_id, user_key: user.key, user_score: user.score)}
+    {:noreply,
+     socket
+     |> assign(
+       auth_id: auth_id,
+       user_key: user.key,
+       score: user.score,
+       click_size: user.click_size
+     )}
   end
 
   def handle_event(
@@ -47,27 +59,43 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         %{"offsetX" => offsetX, "offsetY" => offsetY},
         socket
       ) do
+    Bubbles.init_decimal_context()
+
     cell_size = socket.assigns.cell_size
     column_index_target = Bubbles.get_index_from_coordinate(offsetX, cell_size)
     row_index_target = Bubbles.get_index_from_coordinate(offsetY, cell_size)
 
-    {updated_bubbles, updated_bubble} =
-      Bubbles.update_bubbles_grid(
-        socket.assigns.bubbles,
-        column_index_target,
-        row_index_target
+    clicked_bubble =
+      Bubbles.get_single_bubble(socket.assigns.bubbles, column_index_target, row_index_target)
+
+    cells_to_update =
+      Bubbles.get_bubbles_to_click(
+        clicked_bubble.column,
+        clicked_bubble.row,
+        socket.assigns.grid_size,
+        socket.assigns.click_size
       )
 
-    if Bubbles.cell_already_popped?(socket.assigns.bubbles, column_index_target, row_index_target) do
+    {new_bubbles, updated_bubbles} =
+      Bubbles.update_bubbles(socket.assigns.bubbles, cells_to_update)
+
+    if Enum.all?(updated_bubbles, fn bubble ->
+         Bubbles.cell_already_popped?(socket.assigns.bubbles, bubble.column, bubble.row)
+       end) do
       {:noreply, socket}
     else
-      score = Accounts.increase_user_score(socket.assigns.user_key)
+      score_increase =
+        Enum.count(updated_bubbles, fn bubble ->
+          not Bubbles.cell_already_popped?(socket.assigns.bubbles, bubble.column, bubble.row)
+        end)
+
+      score = Accounts.increase_score(socket.assigns.user_key, score_increase)
 
       {:noreply,
        socket
-       |> assign(bubbles: updated_bubbles, user_score: score)
+       |> assign(bubbles: new_bubbles, score: score)
        |> push_event("Canvas:update", %{
-         data: updated_bubble,
+         data: updated_bubbles,
          cell_size: cell_size
        })}
     end
@@ -89,5 +117,16 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
        data: new_bubbles,
        cell_size: new_cell_size
      })}
+  end
+
+  def handle_event("upgrade_perk", %{"perk_name" => perk_name}, socket) do
+    if perk_name in @perk_strings do
+      perk_atom = String.to_atom(perk_name)
+      {perk_level, score} = Accounts.increment_user_perk(socket.assigns.user_key, perk_atom)
+
+      {:noreply, socket |> assign([{perk_atom, perk_level}, score: score])}
+    else
+      {:noreply, socket}
+    end
   end
 end

@@ -55,12 +55,14 @@ Hooks.Canvas = {
 
     this.handleEvent("Canvas:update", (reply) => {
       const { data, cell_size } = reply;
-      const { value, x, y } = data;
 
-      const fill = value ? "black" : "#FAF9F6";
-      context.fillStyle = fill;
+      for (const cell of data) {
+        const { value, x, y } = cell;
+        const fill = value ? "black" : "#FAF9F6";
+        context.fillStyle = fill;
 
-      context.fillRect(x, y, cell_size, cell_size);
+        context.fillRect(x, y, cell_size, cell_size);
+      }
     });
   },
 };

@@ -2,51 +2,94 @@ defmodule BubbleClicker.Bubbles do
   @moduledoc """
   Functions to help handle bubble grids, the base upon which this game runs.
   """
+  def init_decimal_context do
+    Decimal.Context.update(fn update -> %Decimal.Context{update | precision: 10} end)
+  end
+
+  def number_to_decimal(number) do
+    if is_float(number) do
+      Float.to_string(number) |> Decimal.new()
+    else
+      Decimal.new(number)
+    end
+  end
 
   def calculate_cell_size(grid_dimension, grid_size) do
-    grid_dimension / grid_size
+    Decimal.div(number_to_decimal(grid_dimension), number_to_decimal(grid_size))
   end
 
   def generate_bubbles_grid(grid_size, cell_size) do
-    1..(grid_size * grid_size)
-    |> Enum.chunk_every(grid_size)
-    |> Enum.with_index()
-    |> Enum.map(fn {column, column_index} ->
-      Enum.map(column, fn val ->
-        row_index = val - 1 - column_index * grid_size
-
-        x = column_index * cell_size
-        y = row_index * cell_size
-        %{id: val, value: false, x: x, y: y}
-      end)
-    end)
-    |> List.flatten()
+    for column <- 0..(grid_size - 1), row <- 0..(grid_size - 1) do
+      %{
+        id: column + grid_size * row,
+        x: Decimal.mult(number_to_decimal(column), cell_size),
+        y: Decimal.mult(number_to_decimal(row), cell_size),
+        column: column,
+        row: row,
+        value: false
+      }
+    end
   end
 
   def get_index_from_coordinate(x_coordinate, cell_size) do
-    Kernel.trunc(x_coordinate / cell_size) * cell_size
+    decimal_coordinate = number_to_decimal(x_coordinate)
+    whole_divisions = Decimal.div(decimal_coordinate, cell_size) |> Decimal.round(0, :floor)
+    calculated_coordinate = Decimal.mult(whole_divisions, cell_size)
+
+    calculated_coordinate
   end
 
-  def update_bubbles_grid(bubbles, column_index, row_index) do
+  def get_bubbles_to_click(column, row, grid_size, click_size) do
+    column_indexes = (column - click_size + 1)..(column + click_size - 1)
+    row_indexes = (row - click_size + 1)..(row + click_size - 1)
+
+    cells_to_click =
+      for column <- column_indexes,
+          column >= 0 and column < grid_size,
+          row <- row_indexes,
+          row >= 0 and row < grid_size do
+        {column, row}
+      end
+
+    cells_to_click
+  end
+
+  def cells_contain_bubble(bubble, cells) do
+    Enum.any?(cells, fn {cell_column, cell_row} ->
+      cell_column === bubble.column and cell_row === bubble.row
+    end)
+  end
+
+  def update_bubbles(bubbles, cells) do
     updated_bubbles =
-      Enum.map(bubbles, fn %{id: id, x: x, y: y, value: value} = bubble ->
-        if x == column_index and y == row_index and value !== true do
-          %{x: x, y: y, id: id, value: true}
+      Enum.map(bubbles, fn bubble ->
+        if cells_contain_bubble(bubble, cells) do
+          %{bubble | value: true}
         else
           bubble
         end
       end)
 
-    updated_bubble =
-      Enum.find(updated_bubbles, fn %{x: x, y: y} -> x == column_index and y == row_index end)
+    bubbles_to_update =
+      Enum.map(cells, fn {cell_column, cell_row} ->
+        Enum.find(updated_bubbles, fn bubble ->
+          bubble.column === cell_column and bubble.row === cell_row
+        end)
+      end)
 
-    {updated_bubbles, updated_bubble}
+    {updated_bubbles, bubbles_to_update}
   end
 
-  def cell_already_popped?(bubbles, column_index, row_index) do
+  def get_single_bubble(bubbles, column_index, row_index) do
+    Enum.find(bubbles, fn %{x: x, y: y} ->
+      Decimal.eq?(x, column_index) and Decimal.eq?(y, row_index)
+    end)
+  end
+
+  def cell_already_popped?(bubbles, column, row) do
     bubble =
       Enum.find(bubbles, fn bubble ->
-        bubble.x == column_index and bubble.y == row_index
+        bubble.column === column and bubble.row === row
       end)
 
     bubble.value
