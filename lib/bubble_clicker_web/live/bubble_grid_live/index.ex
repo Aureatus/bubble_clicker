@@ -112,37 +112,45 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   def handle_event("change_grid_size", %{"amount" => amount}, socket) do
     amount_integer = String.to_integer(amount)
 
-    {grid_size, score} =
-      Accounts.increment_user_perk(
-        socket.assigns.user_key,
-        :grid_size,
-        amount_integer,
-        amount_integer
-      )
+    if socket.assigns.score - amount_integer < 0 do
+      {:noreply, put_flash(socket, :error, "Don't have enough score!")}
+    else
+      {grid_size, score} =
+        Accounts.increment_user_perk(
+          socket.assigns.user_key,
+          :grid_size,
+          amount_integer,
+          amount_integer
+        )
 
-    cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, grid_size)
-    new_bubbles = Bubbles.generate_bubbles_grid(grid_size, cell_size)
+      cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, grid_size)
+      new_bubbles = Bubbles.generate_bubbles_grid(grid_size, cell_size)
 
-    {:noreply,
-     socket
-     |> assign(:grid_size, grid_size)
-     |> assign(:cell_size, cell_size)
-     |> assign(:bubbles, new_bubbles)
-     |> assign(:score, score)
-     |> push_event("Canvas:init", %{
-       data: new_bubbles,
-       cell_size: cell_size
-     })}
+      {:noreply,
+       socket
+       |> assign(:grid_size, grid_size)
+       |> assign(:cell_size, cell_size)
+       |> assign(:bubbles, new_bubbles)
+       |> assign(:score, score)
+       |> push_event("Canvas:init", %{
+         data: new_bubbles,
+         cell_size: cell_size
+       })}
+    end
   end
 
   def handle_event("upgrade_perk", %{"perk_name" => perk_name}, socket) do
-    if perk_name in @perk_strings do
-      perk_atom = String.to_atom(perk_name)
-      {perk_level, score} = Accounts.increment_user_perk(socket.assigns.user_key, perk_atom)
-
-      {:noreply, socket |> assign([{perk_atom, perk_level}, score: score])}
+    if socket.assigns.score - 1 < 0 do
+      {:noreply, put_flash(socket, :error, "Don't have enough score!")}
     else
-      {:noreply, socket}
+      if perk_name in @perk_strings do
+        perk_atom = String.to_atom(perk_name)
+        {perk_level, score} = Accounts.increment_user_perk(socket.assigns.user_key, perk_atom)
+
+        {:noreply, socket |> assign([{perk_atom, perk_level}, score: score])}
+      else
+        {:noreply, socket}
+      end
     end
   end
 end
