@@ -84,7 +84,12 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
        end) do
       {:noreply, socket}
     else
-      score = Accounts.increase_user_score(socket.assigns.user_key)
+      score_increase =
+        Enum.count(updated_bubbles, fn bubble ->
+          not Bubbles.cell_already_popped?(socket.assigns.bubbles, bubble.column, bubble.row)
+        end)
+
+      score = Accounts.increase_user_score(socket.assigns.user_key, score_increase)
 
       {:noreply,
        socket
