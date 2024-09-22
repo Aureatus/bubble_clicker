@@ -39,28 +39,6 @@ defmodule BubbleClicker.Bubbles do
     calculated_coordinate
   end
 
-  def calculate_bounds(index, cell_size, click_size) do
-    radius_to_add = Decimal.mult(cell_size, (click_size - 1) |> number_to_decimal)
-
-    lower_bound_column = Decimal.sub(index, radius_to_add)
-    upper_bound_column = Decimal.add(index, radius_to_add)
-
-    {lower_bound_column, upper_bound_column}
-  end
-
-  def calculate_indexes(upper_bound, lower_bound, cell_size) do
-    a =
-      Decimal.div(Decimal.sub(upper_bound, lower_bound), cell_size)
-      |> Decimal.add(1)
-      |> Decimal.round(0, :down)
-      |> Decimal.to_integer()
-
-    1..a
-    |> Enum.map(fn value ->
-      Decimal.add(lower_bound, Decimal.mult(cell_size, value - 1))
-    end)
-  end
-
   def get_bubbles_to_click(column, row, grid_size, click_size) do
     column_indexes = (column - click_size + 1)..(column + click_size - 1)
     row_indexes = (row - click_size + 1)..(row + click_size - 1)
@@ -106,24 +84,6 @@ defmodule BubbleClicker.Bubbles do
     Enum.find(bubbles, fn %{x: x, y: y} ->
       Decimal.eq?(x, column_index) and Decimal.eq?(y, row_index)
     end)
-  end
-
-  def update_bubbles_grid(bubbles, column_index, row_index) do
-    updated_bubbles =
-      Enum.map(bubbles, fn %{id: id, x: x, y: y, value: value} = bubble ->
-        if Decimal.eq?(x, column_index) and Decimal.eq?(y, row_index) and value !== true do
-          %{x: x, y: y, id: id, value: true}
-        else
-          bubble
-        end
-      end)
-
-    updated_bubble =
-      Enum.find(updated_bubbles, fn %{x: x, y: y} ->
-        Decimal.eq?(x, column_index) and Decimal.eq?(y, row_index)
-      end)
-
-    {updated_bubbles, updated_bubble}
   end
 
   def cell_already_popped?(bubbles, column_index, row_index) do
