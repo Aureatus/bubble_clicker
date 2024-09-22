@@ -86,10 +86,10 @@ defmodule BubbleClicker.Bubbles do
     end)
   end
 
-  def cell_already_popped?(bubbles, column_index, row_index) do
+  def cell_already_popped?(bubbles, column, row) do
     bubble =
       Enum.find(bubbles, fn bubble ->
-        bubble.x === column_index and bubble.y === row_index
+        bubble.column === column and bubble.row === row
       end)
 
     bubble.value

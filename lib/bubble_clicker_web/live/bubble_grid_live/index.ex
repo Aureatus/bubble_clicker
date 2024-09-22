@@ -79,7 +79,9 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     {new_bubbles, updated_bubbles} =
       Bubbles.update_bubbles(socket.assigns.bubbles, cells_to_update)
 
-    if Bubbles.cell_already_popped?(socket.assigns.bubbles, column_index_target, row_index_target) do
+    if Enum.all?(updated_bubbles, fn bubble ->
+         Bubbles.cell_already_popped?(socket.assigns.bubbles, bubble.column, bubble.row)
+       end) do
       {:noreply, socket}
     else
       score = Accounts.increase_user_score(socket.assigns.user_key)
