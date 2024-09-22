@@ -69,7 +69,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       Bubbles.get_single_bubble(socket.assigns.bubbles, column_index_target, row_index_target)
 
     cells_to_update =
-      Bubbles.get_bubbles_to_click_v2(
+      Bubbles.get_bubbles_to_click(
         clicked_bubble.column,
         clicked_bubble.row,
         socket.assigns.grid_size,

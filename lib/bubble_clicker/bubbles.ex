@@ -61,7 +61,7 @@ defmodule BubbleClicker.Bubbles do
     end)
   end
 
-  def get_bubbles_to_click_v2(column, row, grid_size, click_size) do
+  def get_bubbles_to_click(column, row, grid_size, click_size) do
     column_indexes = (column - click_size + 1)..(column + click_size - 1)
     row_indexes = (row - click_size + 1)..(row + click_size - 1)
 
