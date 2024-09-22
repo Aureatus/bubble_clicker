@@ -19,29 +19,6 @@ defmodule BubbleClicker.Bubbles do
   end
 
   def generate_bubbles_grid(grid_size, cell_size) do
-    1..(grid_size * grid_size)
-    |> Enum.chunk_every(grid_size)
-    |> Enum.with_index()
-    |> Enum.map(fn {column, column_index} ->
-      Enum.map(column, fn val ->
-        column_index_decimal = number_to_decimal(column_index)
-
-        row_index =
-          Decimal.sub(
-            number_to_decimal(val - 1),
-            Decimal.mult(column_index_decimal, number_to_decimal(grid_size))
-          )
-
-        x = Decimal.mult(column_index_decimal, cell_size)
-        y = Decimal.mult(row_index, cell_size)
-
-        %{id: val, value: false, x: x, y: y}
-      end)
-    end)
-    |> List.flatten()
-  end
-
-  def generate_bubbles_grid_v2(grid_size, cell_size) do
     for column <- 0..(grid_size - 1), row <- 0..(grid_size - 1) do
       %{
         id: column + grid_size * row,

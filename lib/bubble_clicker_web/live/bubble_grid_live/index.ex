@@ -13,7 +13,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
     cell_size = Bubbles.calculate_cell_size(grid_dimension, grid_size)
 
     bubbles_grid =
-      Bubbles.generate_bubbles_grid_v2(grid_size, cell_size)
+      Bubbles.generate_bubbles_grid(grid_size, cell_size)
 
     auth_id = Accounts.generate_uuid()
 
@@ -99,7 +99,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
 
     new_grid_size = socket.assigns.grid_size + amount_integer
     new_cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, new_grid_size)
-    new_bubbles = Bubbles.generate_bubbles_grid_v2(new_grid_size, new_cell_size)
+    new_bubbles = Bubbles.generate_bubbles_grid(new_grid_size, new_cell_size)
 
     {:noreply,
      socket
