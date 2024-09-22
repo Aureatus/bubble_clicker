@@ -106,7 +106,7 @@ defmodule BubbleClicker.Accounts do
     Ecto.UUID.generate()
   end
 
-  def increase_user_score(user_key, amount \\ 1) do
+  def increase_score(user_key, amount \\ 1) do
     query =
       from(u in User, update: [inc: [score: ^amount]], where: u.key == ^user_key, select: u)
 
@@ -123,7 +123,6 @@ defmodule BubbleClicker.Accounts do
       )
 
     {_, [user]} = Repo.update_all(query, [])
-    IO.inspect(user)
     {get_in(user, [Access.key(perk_name)]), user.score}
   end
 end

@@ -25,7 +25,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       |> assign(:bubbles, bubbles_grid)
       |> assign(:auth_id, auth_id)
       |> assign(:user_key, nil)
-      |> assign(:user_score, nil)
+      |> assign(:score, nil)
       |> assign(:click_size, 1)
       |> push_event("Canvas:init", %{
         data: bubbles_grid,
@@ -49,7 +49,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
      |> assign(
        auth_id: auth_id,
        user_key: user.key,
-       user_score: user.score,
+       score: user.score,
        click_size: user.click_size
      )}
   end
@@ -89,11 +89,11 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
           not Bubbles.cell_already_popped?(socket.assigns.bubbles, bubble.column, bubble.row)
         end)
 
-      score = Accounts.increase_user_score(socket.assigns.user_key, score_increase)
+      score = Accounts.increase_score(socket.assigns.user_key, score_increase)
 
       {:noreply,
        socket
-       |> assign(bubbles: new_bubbles, user_score: score)
+       |> assign(bubbles: new_bubbles, score: score)
        |> push_event("Canvas:update", %{
          data: updated_bubbles,
          cell_size: cell_size
@@ -124,7 +124,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       perk_atom = String.to_atom(perk_name)
       {perk_level, score} = Accounts.increment_user_perk(socket.assigns.user_key, perk_atom)
 
-      {:noreply, socket |> assign([{perk_atom, perk_level}, user_score: score])}
+      {:noreply, socket |> assign([{perk_atom, perk_level}, score: score])}
     else
       {:noreply, socket}
     end
