@@ -6,12 +6,14 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   @perk_strings ["click_size"]
 
   def mount(_params, _session, socket) do
+    Bubbles.init_decimal_context()
+
     grid_size = 30
     grid_dimension = 800
     cell_size = Bubbles.calculate_cell_size(grid_dimension, grid_size)
 
     bubbles_grid =
-      Bubbles.generate_bubbles_grid(grid_size, cell_size)
+      Bubbles.generate_bubbles_grid_v2(grid_size, cell_size)
 
     auth_id = Accounts.generate_uuid()
 
@@ -57,16 +59,25 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         %{"offsetX" => offsetX, "offsetY" => offsetY},
         socket
       ) do
+    Bubbles.init_decimal_context()
+
     cell_size = socket.assigns.cell_size
     column_index_target = Bubbles.get_index_from_coordinate(offsetX, cell_size)
     row_index_target = Bubbles.get_index_from_coordinate(offsetY, cell_size)
 
-    {updated_bubbles, updated_bubble} =
-      Bubbles.update_bubbles_grid(
-        socket.assigns.bubbles,
-        column_index_target,
-        row_index_target
+    clicked_bubble =
+      Bubbles.get_single_bubble(socket.assigns.bubbles, column_index_target, row_index_target)
+
+    cells_to_update =
+      Bubbles.get_bubbles_to_click_v2(
+        clicked_bubble.column,
+        clicked_bubble.row,
+        socket.assigns.grid_size,
+        socket.assigns.user_click_size
       )
+
+    {new_bubbles, updated_bubbles} =
+      Bubbles.update_bubbles(socket.assigns.bubbles, cells_to_update)
 
     if Bubbles.cell_already_popped?(socket.assigns.bubbles, column_index_target, row_index_target) do
       {:noreply, socket}
@@ -75,9 +86,9 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
 
       {:noreply,
        socket
-       |> assign(bubbles: updated_bubbles, user_score: score)
+       |> assign(bubbles: new_bubbles, user_score: score)
        |> push_event("Canvas:update", %{
-         data: updated_bubble,
+         data: updated_bubbles,
          cell_size: cell_size
        })}
     end
@@ -88,7 +99,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
 
     new_grid_size = socket.assigns.grid_size + amount_integer
     new_cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, new_grid_size)
-    new_bubbles = Bubbles.generate_bubbles_grid(new_grid_size, new_cell_size)
+    new_bubbles = Bubbles.generate_bubbles_grid_v2(new_grid_size, new_cell_size)
 
     {:noreply,
      socket
