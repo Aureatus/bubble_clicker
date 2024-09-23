@@ -114,10 +114,10 @@ defmodule BubbleClicker.Accounts do
     user.score
   end
 
-  def increment_user_perk(user_key, perk_name) do
+  def increment_user_perk(user_key, perk_name, increase \\ 1, score_cost \\ 1) do
     query =
       from(u in User,
-        update: [inc: [{^perk_name, 1}, {:score, -1}]],
+        update: [inc: [{^perk_name, ^increase}, {:score, -(^score_cost)}]],
         where: u.key == ^user_key,
         select: u
       )

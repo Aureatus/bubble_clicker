@@ -3,12 +3,12 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   alias BubbleClicker.Bubbles
   use BubbleClickerWeb, :live_view
 
-  @perk_strings ["click_size"]
+  @perk_strings ["click_size", "grid_size"]
 
   def mount(_params, _session, socket) do
     Bubbles.init_decimal_context()
 
-    grid_size = 30
+    grid_size = 10
     grid_dimension = 800
     cell_size = Bubbles.calculate_cell_size(grid_dimension, grid_size)
 
@@ -19,7 +19,6 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
 
     socket =
       socket
-      |> assign(:grid_size, grid_size)
       |> assign(:grid_dimension, grid_dimension)
       |> assign(:cell_size, cell_size)
       |> assign(:bubbles, bubbles_grid)
@@ -27,6 +26,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
       |> assign(:user_key, nil)
       |> assign(:score, nil)
       |> assign(:click_size, 1)
+      |> assign(:grid_size, 1)
       |> push_event("Canvas:init", %{
         data: bubbles_grid,
         cell_size: cell_size
@@ -44,13 +44,21 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         Accounts.get_user!(auth_id)
       end
 
+    cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, user.grid_size)
+
+    bubbles_grid =
+      Bubbles.generate_bubbles_grid(user.grid_size, cell_size)
+
     {:noreply,
      socket
      |> assign(
        auth_id: auth_id,
        user_key: user.key,
        score: user.score,
-       click_size: user.click_size
+       click_size: user.click_size,
+       grid_size: user.grid_size,
+       bubbles: bubbles_grid,
+       cell_size: cell_size
      )}
   end
 
@@ -104,29 +112,45 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   def handle_event("change_grid_size", %{"amount" => amount}, socket) do
     amount_integer = String.to_integer(amount)
 
-    new_grid_size = socket.assigns.grid_size + amount_integer
-    new_cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, new_grid_size)
-    new_bubbles = Bubbles.generate_bubbles_grid(new_grid_size, new_cell_size)
+    if socket.assigns.score - amount_integer < 0 do
+      {:noreply, put_flash(socket, :error, "Don't have enough score!")}
+    else
+      {grid_size, score} =
+        Accounts.increment_user_perk(
+          socket.assigns.user_key,
+          :grid_size,
+          amount_integer,
+          amount_integer
+        )
 
-    {:noreply,
-     socket
-     |> assign(:grid_size, new_grid_size)
-     |> assign(:cell_size, new_cell_size)
-     |> assign(:bubbles, new_bubbles)
-     |> push_event("Canvas:init", %{
-       data: new_bubbles,
-       cell_size: new_cell_size
-     })}
+      cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, grid_size)
+      new_bubbles = Bubbles.generate_bubbles_grid(grid_size, cell_size)
+
+      {:noreply,
+       socket
+       |> assign(:grid_size, grid_size)
+       |> assign(:cell_size, cell_size)
+       |> assign(:bubbles, new_bubbles)
+       |> assign(:score, score)
+       |> push_event("Canvas:init", %{
+         data: new_bubbles,
+         cell_size: cell_size
+       })}
+    end
   end
 
   def handle_event("upgrade_perk", %{"perk_name" => perk_name}, socket) do
-    if perk_name in @perk_strings do
-      perk_atom = String.to_atom(perk_name)
-      {perk_level, score} = Accounts.increment_user_perk(socket.assigns.user_key, perk_atom)
-
-      {:noreply, socket |> assign([{perk_atom, perk_level}, score: score])}
+    if socket.assigns.score - 1 < 0 do
+      {:noreply, put_flash(socket, :error, "Don't have enough score!")}
     else
-      {:noreply, socket}
+      if perk_name in @perk_strings do
+        perk_atom = String.to_atom(perk_name)
+        {perk_level, score} = Accounts.increment_user_perk(socket.assigns.user_key, perk_atom)
+
+        {:noreply, socket |> assign([{perk_atom, perk_level}, score: score])}
+      else
+        {:noreply, socket}
+      end
     end
   end
 end
