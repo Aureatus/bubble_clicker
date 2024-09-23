@@ -30,12 +30,17 @@ let csrfToken = document
  * @type {Object.<string, import("phoenix_live_view").ViewHook>}
  */
 let Hooks = {};
-Hooks.Canvas = {
+
+Hooks.Init = {
   mounted() {
     let auth_id = localStorage.getItem("auth_id") || this.el.dataset.auth_id;
     localStorage.setItem("auth_id", auth_id);
     this.pushEvent("Auth:receive", { auth_id });
+  },
+};
 
+Hooks.Canvas = {
+  mounted() {
     let canvas = this.el;
     let context = canvas.getContext("2d");
 
