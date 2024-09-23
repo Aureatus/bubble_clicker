@@ -4,33 +4,17 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
   use BubbleClickerWeb, :live_view
 
   @perk_strings ["click_size", "grid_size"]
+  @grid_dimension 800
 
   def mount(_params, _session, socket) do
     Bubbles.init_decimal_context()
-
-    grid_size = 10
-    grid_dimension = 800
-    cell_size = Bubbles.calculate_cell_size(grid_dimension, grid_size)
-
-    bubbles_grid =
-      Bubbles.generate_bubbles_grid(grid_size, cell_size)
 
     auth_id = Accounts.generate_uuid()
 
     socket =
       socket
-      |> assign(:grid_dimension, grid_dimension)
-      |> assign(:cell_size, cell_size)
-      |> assign(:bubbles, bubbles_grid)
       |> assign(:auth_id, auth_id)
       |> assign(:user_key, nil)
-      |> assign(:score, nil)
-      |> assign(:click_size, 1)
-      |> assign(:grid_size, 1)
-      |> push_event("Canvas:init", %{
-        data: bubbles_grid,
-        cell_size: cell_size
-      })
 
     {:ok, socket}
   end
@@ -44,7 +28,7 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
         Accounts.get_user!(auth_id)
       end
 
-    cell_size = Bubbles.calculate_cell_size(socket.assigns.grid_dimension, user.grid_size)
+    cell_size = Bubbles.calculate_cell_size(@grid_dimension, user.grid_size)
 
     bubbles_grid =
       Bubbles.generate_bubbles_grid(user.grid_size, cell_size)
@@ -58,7 +42,8 @@ defmodule BubbleClickerWeb.BubbleGridLive.Index do
        click_size: user.click_size,
        grid_size: user.grid_size,
        bubbles: bubbles_grid,
-       cell_size: cell_size
+       cell_size: cell_size,
+       grid_dimension: @grid_dimension
      )}
   end
 
