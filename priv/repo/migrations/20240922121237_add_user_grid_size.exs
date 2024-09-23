@@ -1,4 +1,4 @@
-defmodule BubbleClicker.Repo.Migrations.AddUserClickSizePerk do
+defmodule BubbleClicker.Repo.Migrations.AddUserGridSizePerk do
   use Ecto.Migration
 
   def change do
