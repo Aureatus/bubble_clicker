@@ -1,26 +1,32 @@
-<.header>
-  Bubble Grid <br /> Score: <%= @score %>
-  <:actions>
-    <section class="flex flex-col">
-      <label>
-        <input type="button" phx-click="upgrade_perk" phx-value-perk_name="click_size" />
-        Upgrade click size to <%= @click_size + 1 %>
-      </label>
-      <label>
-        <input type="button" phx-click="change_grid_size" phx-value-amount={+1} />
-        Upgrade grid size to <%= @grid_size + 1 %>
-      </label>
-    </section>
-  </:actions>
-</.header>
-<canvas
-  width={@grid_dimension}
-  height={@grid_dimension}
-  class="border-8 border-blue-400"
-  id="canvas"
-  phx-hook="Canvas"
-  phx-update="ignore"
-  phx-click={JS.push("canvas_click", value: %{width: @grid_dimension})}
-  data-auth_id={@auth_id}
->
-</canvas>
+<div id="page_container" phx-hook="Init">
+  <%= if @user_key === nil do %>
+    <h1 class="text-center text-5xl">Loading</h1>
+  <% else %>
+    <.header>
+      Bubble Grid <br /> Score: <%= @score %>
+      <:actions>
+        <section class="flex flex-col">
+          <label>
+            <input type="button" phx-click="upgrade_perk" phx-value-perk_name="click_size" />
+            Upgrade click size to <%= @click_size + 1 %>
+          </label>
+          <label>
+            <input type="button" phx-click="change_grid_size" phx-value-amount={+1} />
+            Upgrade grid size to <%= @grid_size + 1 %>
+          </label>
+        </section>
+      </:actions>
+    </.header>
+    <canvas
+      width={@grid_dimension}
+      height={@grid_dimension}
+      class="border-8 border-blue-400"
+      id="canvas"
+      phx-hook="Canvas"
+      phx-update="ignore"
+      phx-click={JS.push("canvas_click", value: %{width: @grid_dimension})}
+      data-auth_id={@auth_id}
+    >
+    </canvas>
+  <% end %>
+</div>
